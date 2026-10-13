@@ -28,20 +28,20 @@ function seedDatabase(dbInstance = null) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
   `);
 
-  insertUser.run('USR-ADMIN-1', 'admin', 'admin@hospital.icu', adminHash, 'admin', 'Chief Medical Admin Sarah Jenkins', '+1-555-0100', 'ICU Director / System Admin');
-  insertUser.run('USR-STAFF-1', 'nurse.sarah', 'nurse.sarah@hospital.icu', staffHash, 'staff', 'Sarah Connor, RN BSN', '+1-555-0101', 'Senior ICU Charge Nurse');
-  insertUser.run('USR-STAFF-2', 'dr.arjun', 'dr.arjun@hospital.icu', staffHash, 'staff', 'Dr. Arjun Mehta, MD', '+1-555-0102', 'Lead Intensivist');
-  insertUser.run('USR-STAFF-3', 'nurse.david', 'nurse.david@hospital.icu', staffHash, 'staff', 'David Miller, RN CCRN', '+1-555-0103', 'Critical Care Nurse');
-  insertUser.run('USR-FAM-1', 'family.dent', 'family.dent@hospital.icu', familyHash, 'family', 'Tricia McMillan', '+1-555-0104', 'Spouse of Arthur Dent');
-  insertUser.run('USR-FAM-2', 'family.vance', 'family.vance@hospital.icu', familyHash, 'family', 'Clara Vance', '+1-555-0105', 'Daughter of Marcus Vance');
-  insertUser.run('USR-FAM-3', 'family.chen', 'family.chen@hospital.icu', familyHash, 'family', 'Wei Chen', '+1-555-0106', 'Brother of Mei-Ling Chen');
+  insertUser.run('USR-ADMIN-1', 'admin', 'admin@hospital.icu', adminHash, 'admin', 'Chief Medical Admin Dr. Priya Sharma', '+91-98100-00100', 'ICU Director / System Admin');
+  insertUser.run('USR-STAFF-1', 'nurse.kavitha', 'nurse.kavitha@hospital.icu', staffHash, 'staff', 'Kavitha Nair, RN BSN', '+91-98100-00101', 'Senior ICU Charge Nurse');
+  insertUser.run('USR-STAFF-2', 'dr.arjun', 'dr.arjun@hospital.icu', staffHash, 'staff', 'Dr. Arjun Mehta, MD', '+91-98100-00102', 'Lead Intensivist');
+  insertUser.run('USR-STAFF-3', 'nurse.rajesh', 'nurse.rajesh@hospital.icu', staffHash, 'staff', 'Rajesh Pillai, RN CCRN', '+91-98100-00103', 'Critical Care Nurse');
+  insertUser.run('USR-FAM-1', 'family.sharma', 'family.sharma@hospital.icu', familyHash, 'family', 'Anita Sharma', '+91-98100-00104', 'Spouse of Vikram Sharma');
+  insertUser.run('USR-FAM-2', 'family.iyer', 'family.iyer@hospital.icu', familyHash, 'family', 'Deepa Iyer', '+91-98100-00105', 'Daughter of Suresh Iyer');
+  insertUser.run('USR-FAM-3', 'family.patel', 'family.patel@hospital.icu', familyHash, 'family', 'Nikhil Patel', '+91-98100-00106', 'Brother of Prerna Patel');
 
-  // 15 Patients (14 diverse clinical scenarios + 1 intentionally critical demo subject "Marcus 'Unlucky' Vance")
+  // 15 Patients (14 diverse clinical scenarios + 1 intentionally critical demo subject)
   const patientsData = [
     {
       id: 'PAT-101',
-      first_name: 'Arthur',
-      last_name: 'Dent',
+      first_name: 'Vikram',
+      last_name: 'Sharma',
       age: 42,
       gender: 'Male',
       bed_no: 101,
@@ -53,8 +53,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-102',
-      first_name: 'Eleanor',
-      last_name: 'Rigby',
+      first_name: 'Sunita',
+      last_name: 'Reddy',
       age: 67,
       gender: 'Female',
       bed_no: 102,
@@ -66,8 +66,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-103',
-      first_name: 'Mei-Ling',
-      last_name: 'Chen',
+      first_name: 'Prerna',
+      last_name: 'Patel',
       age: 34,
       gender: 'Female',
       bed_no: 103,
@@ -79,8 +79,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-104',
-      first_name: 'James',
-      last_name: 'Holden',
+      first_name: 'Rohit',
+      last_name: 'Verma',
       age: 49,
       gender: 'Male',
       bed_no: 104,
@@ -92,8 +92,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-105',
-      first_name: 'Naomi',
-      last_name: 'Nagata',
+      first_name: 'Meena',
+      last_name: 'Krishnamurthy',
       age: 52,
       gender: 'Female',
       bed_no: 105,
@@ -105,8 +105,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-106',
-      first_name: 'Amos',
-      last_name: 'Burton',
+      first_name: 'Ajay',
+      last_name: 'Singh',
       age: 46,
       gender: 'Male',
       bed_no: 106,
@@ -118,8 +118,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-107',
-      first_name: 'Roberta',
-      last_name: 'Draper',
+      first_name: 'Lakshmi',
+      last_name: 'Nambiar',
       age: 38,
       gender: 'Female',
       bed_no: 107,
@@ -131,8 +131,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-108',
-      first_name: 'Alex',
-      last_name: 'Kamal',
+      first_name: 'Sanjay',
+      last_name: 'Kapoor',
       age: 55,
       gender: 'Male',
       bed_no: 108,
@@ -144,8 +144,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-109',
-      first_name: 'Chrisjen',
-      last_name: 'Avasarala',
+      first_name: 'Geeta',
+      last_name: 'Bose',
       age: 71,
       gender: 'Female',
       bed_no: 109,
@@ -157,8 +157,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-110',
-      first_name: 'Clarissa',
-      last_name: 'Mao',
+      first_name: 'Divya',
+      last_name: 'Menon',
       age: 29,
       gender: 'Female',
       bed_no: 110,
@@ -170,8 +170,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-111',
-      first_name: 'Josephus',
-      last_name: 'Miller',
+      first_name: 'Raman',
+      last_name: 'Gupta',
       age: 63,
       gender: 'Male',
       bed_no: 111,
@@ -183,8 +183,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-112',
-      first_name: 'Camina',
-      last_name: 'Drummer',
+      first_name: 'Savita',
+      last_name: 'Joshi',
       age: 44,
       gender: 'Female',
       bed_no: 112,
@@ -196,8 +196,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-113',
-      first_name: 'Fred',
-      last_name: 'Johnson',
+      first_name: 'Dinesh',
+      last_name: 'Rao',
       age: 60,
       gender: 'Male',
       bed_no: 113,
@@ -209,8 +209,8 @@ function seedDatabase(dbInstance = null) {
     },
     {
       id: 'PAT-114',
-      first_name: 'Pravin',
-      last_name: 'Meng',
+      first_name: 'Harish',
+      last_name: 'Chandra',
       age: 48,
       gender: 'Male',
       bed_no: 114,
@@ -220,11 +220,11 @@ function seedDatabase(dbInstance = null) {
       profile: 'post_op',
       summary: 'Drain outputs serosanguinous and low. TPN infusion. Vital parameters within acceptable margins.'
     },
-    // PATIENT 15: THE UNLUCKY GUY (SPECIFICALLY LABELED SIMULATION DEMO PATIENT)
+    // PATIENT 15: DEMO ALERT TEST SUBJECT
     {
       id: 'PAT-115',
-      first_name: 'Marcus "Unlucky"',
-      last_name: 'Vance',
+      first_name: 'Suresh',
+      last_name: 'Iyer',
       age: 58,
       gender: 'Male',
       bed_no: 115,
@@ -264,7 +264,7 @@ function seedDatabase(dbInstance = null) {
     VALUES (?, ?, ?, 'USR-ADMIN-1')
   `);
 
-  // Nurse Sarah has beds 101, 102, 103, 104, 115
+  // Nurse Kavitha has beds 101, 102, 103, 104, 115
   ['PAT-101', 'PAT-102', 'PAT-103', 'PAT-104', 'PAT-115'].forEach(pid => {
     insertStaffAssignment.run('USR-STAFF-1', pid, 'all');
   });
@@ -274,7 +274,7 @@ function seedDatabase(dbInstance = null) {
     insertStaffAssignment.run('USR-STAFF-2', p.id, 'all');
   });
 
-  // Nurse David has beds 105, 106, 107, 108
+  // Nurse Rajesh has beds 105, 106, 107, 108
   ['PAT-105', 'PAT-106', 'PAT-107', 'PAT-108'].forEach(pid => {
     insertStaffAssignment.run('USR-STAFF-3', pid, 'all');
   });
@@ -347,7 +347,7 @@ function seedDatabase(dbInstance = null) {
     'Max Safe: 145 mmHg',
     'critical',
     'active',
-    'CRITICAL HYPERTENSION: Systolic BP 178 mmHg exceeds safe threshold of 145 mmHg (Bed 115 - Marcus Vance)'
+    'CRITICAL HYPERTENSION: Systolic BP 178 mmHg exceeds safe threshold of 145 mmHg (Bed 115 - Suresh Iyer)'
   );
 
   insertAlert.run(
@@ -358,7 +358,7 @@ function seedDatabase(dbInstance = null) {
     'Min Safe: 93%',
     'critical',
     'active',
-    'CRITICAL HYPOXEMIA: SpO2 87% dropped below safe threshold of 93% (Bed 115 - Marcus Vance)'
+    'CRITICAL HYPOXEMIA: SpO2 87% dropped below safe threshold of 93% (Bed 115 - Suresh Iyer)'
   );
 
   insertAlert.run(
@@ -369,7 +369,7 @@ function seedDatabase(dbInstance = null) {
     'Max Safe: 22 bpm',
     'warning',
     'acknowledged',
-    'Tachypnea noted: Respiration Rate 25 bpm exceeds safe limit of 22 bpm (Bed 105 - Naomi Nagata)'
+    'Tachypnea noted: Respiration Rate 25 bpm exceeds safe limit of 22 bpm (Bed 105 - Meena Krishnamurthy)'
   );
 
   // Mark acknowledged details for Bed 105 alert
@@ -390,7 +390,7 @@ function seedDatabase(dbInstance = null) {
   insertNote.run(
     'PAT-101',
     'USR-STAFF-1',
-    'Sarah Connor, RN',
+    'Kavitha Nair, RN',
     'staff',
     'observation',
     'Patient alert and oriented x 4. Lung sounds clear bilaterally with slight basal crackles on left. Encouraged deep breathing with incentive spirometer.',
@@ -410,7 +410,7 @@ function seedDatabase(dbInstance = null) {
   insertNote.run(
     'PAT-115',
     'USR-STAFF-1',
-    'Sarah Connor, RN',
+    'Kavitha Nair, RN',
     'staff',
     'intervention',
     'High BP and hypoxemia alert triggered. Elevated head of bed to 45 degrees, verified oxygen mask fit, and administered PRN IV labetalol per protocol. Continuous telemetry active.',
@@ -424,12 +424,12 @@ function seedDatabase(dbInstance = null) {
   `);
 
   insertAudit.run('SYSTEM_INIT', 'USR-ADMIN-1', 'admin', 'admin', 'system', 'CORE', 'System initialized with demo dataset', JSON.stringify({ totalPatients: 15, simulated: true }), '127.0.0.1', new Date(now - 7200000).toISOString());
-  insertAudit.run('ROLE_ASSIGNMENT', 'USR-ADMIN-1', 'admin', 'admin', 'user', 'USR-STAFF-1', 'Assigned ICU Charge Nurse role to Sarah Connor', null, '127.0.0.1', new Date(now - 7000000).toISOString());
-  insertAudit.run('PRIVACY_LINK', 'USR-ADMIN-1', 'admin', 'admin', 'family_link', 'PAT-101', 'Verified and linked Tricia McMillan to Patient PAT-101 (Arthur Dent)', null, '127.0.0.1', new Date(now - 6800000).toISOString());
-  insertAudit.run('ALERT_ACKNOWLEDGED', 'USR-STAFF-1', 'nurse.sarah', 'staff', 'alert', '3', 'Nurse Sarah acknowledged Respiration Rate warning for Bed 105', null, '127.0.0.1', new Date(now - 600000).toISOString());
+  insertAudit.run('ROLE_ASSIGNMENT', 'USR-ADMIN-1', 'admin', 'admin', 'user', 'USR-STAFF-1', 'Assigned ICU Charge Nurse role to Kavitha Nair', null, '127.0.0.1', new Date(now - 7000000).toISOString());
+  insertAudit.run('PRIVACY_LINK', 'USR-ADMIN-1', 'admin', 'admin', 'family_link', 'PAT-101', 'Verified and linked Anita Sharma to Patient PAT-101 (Vikram Sharma)', null, '127.0.0.1', new Date(now - 6800000).toISOString());
+  insertAudit.run('ALERT_ACKNOWLEDGED', 'USR-STAFF-1', 'nurse.kavitha', 'staff', 'alert', '3', 'Nurse Kavitha acknowledged Respiration Rate warning for Bed 105', null, '127.0.0.1', new Date(now - 600000).toISOString());
 
   console.log('Database seeded successfully:');
-  console.log(' - 15 Patients initialized (including Bed 115 Unlucky Guy for alert testing)');
+  console.log(' - 15 Patients initialized (including Bed 115 Suresh Iyer for alert testing)');
   console.log(' - 7 Demo User Accounts created (Admin, 3 Staff, 3 Family)');
   console.log(' - Vitals telemetry history and active/acknowledged alerts seeded');
   console.log(' - Clinical notes and initial audit trail populated');
