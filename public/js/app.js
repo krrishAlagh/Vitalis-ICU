@@ -1465,8 +1465,8 @@
         btn.classList.add('active');
         const role = btn.dataset.role;
         if (role === 'admin') document.getElementById('login-identifier').value = 'admin@hospital.icu';
-        else if (role === 'family') document.getElementById('login-identifier').value = 'family.dent@hospital.icu';
-        else document.getElementById('login-identifier').value = 'nurse.sarah@hospital.icu';
+        else if (role === 'family') document.getElementById('login-identifier').value = 'family.sharma@hospital.icu';
+        else document.getElementById('login-identifier').value = 'nurse.kavitha@hospital.icu';
         document.getElementById('login-password').value = role === 'admin' ? 'AdminPass123!' : role === 'family' ? 'FamilyPass123!' : 'StaffPass123!';
       });
     });
