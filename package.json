@@ -1,0 +1,28 @@
+{
+  "name": "icu-patient-monitoring-system",
+  "version": "1.0.0",
+  "description": "Enterprise-grade ICU Patient Monitoring and Telemetry System with Role-Based Access Control, Real-Time Alerting, and Audit Logging",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test --test-concurrency=1 test/**/*.test.js",
+    "seed": "node server/db/seed.js"
+  },
+  "keywords": [
+    "icu",
+    "patient-monitoring",
+    "telemetry",
+    "healthcare",
+    "dbms",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

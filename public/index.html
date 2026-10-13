@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vitalis ICU — Intelligent Clinical Telemetry & Patient Monitoring</title>
+  <meta name="description" content="Enterprise Intensive Care Unit Telemetry, Real-time Alerting, Role-Based Access Security and Family Portal">
+  
+  <!-- Apple Health Typography & Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="theme-dark">
+  <div id="app" class="app-container">
+    <!-- Apple Health Frosted Header -->
+    <header class="app-header" id="global-header">
+      <div class="header-branding" id="header-brand-link" style="cursor: pointer;">
+        <div class="branding-logo">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <div class="branding-text">
+          <span class="branding-title">Vitalis ICU</span>
+          <span class="branding-subtitle">Intelligent Clinical Telemetry</span>
+        </div>
+      </div>
+
+      <!-- iOS Segmented Navigation tabs -->
+      <nav class="header-nav" id="main-nav">
+        <button class="nav-tab active" data-view="landing" id="nav-landing">
+          <span class="nav-icon" data-icu-icon="home"></span> Overview
+        </button>
+        <button class="nav-tab" data-view="dashboard" id="nav-dashboard" style="display:none;">
+          <span class="nav-icon" data-icu-icon="layout-dashboard"></span> Summary
+        </button>
+        <button class="nav-tab" data-view="alerts" id="nav-alerts" style="display:none;">
+          <span class="nav-icon" data-icu-icon="bell"></span> Alerts
+          <span class="nav-badge" id="header-alert-count">0</span>
+        </button>
+        <button class="nav-tab" data-view="family" id="nav-family" style="display:none;">
+          <span class="nav-icon" data-icu-icon="heart-handshake"></span> Sharing
+        </button>
+        <button class="nav-tab" data-view="admin" id="nav-admin" style="display:none;">
+          <span class="nav-icon" data-icu-icon="settings"></span> Manage
+        </button>
+      </nav>
+
+      <!-- User & Session Controls -->
+      <div class="header-actions">
+        <div class="theme-toggle-wrap">
+          <button id="btn-theme-toggle" class="btn-icon" title="Toggle Light / Dark Mode">
+            <span id="theme-icon" data-icu-icon="moon"></span>
+          </button>
+        </div>
+
+        <div class="audio-toggle-wrap">
+          <button id="btn-audio-toggle" class="btn-icon" title="Toggle Alarm Sound (Audible telemetry cues)">
+            <span id="audio-icon" data-icu-icon="bell"></span>
+          </button>
+        </div>
+
+        <div id="user-profile-badge" class="user-badge" style="display:none;">
+          <div class="user-avatar" id="user-avatar-initials">RN</div>
+          <div class="user-info-text">
+            <span class="user-name" id="user-display-name">Loading...</span>
+            <span class="user-role-tag" id="user-role-tag">Staff</span>
+          </div>
+          <button id="btn-logout" class="btn-logout" title="Sign Out">Sign Out</button>
+        </div>
+
+        <button id="btn-show-login" class="btn-primary-sm" style="display:none;">Sign In</button>
+      </div>
+    </header>
+
+    <!-- Simulation Notice & Live Telemetry Control Bar -->
+    <section class="simulator-bar" id="simulator-bar" style="display:none;">
+      <div class="sim-notice">
+        <span class="sim-pill">SIMULATED DATASET</span>
+        <span class="sim-text">Real-time physiological simulation active for testing and verification.</span>
+      </div>
+      <div class="sim-controls">
+        <button id="btn-sim-toggle" class="btn-sim" title="Start / Pause telemetry simulation loop">
+          <span id="sim-status-icon" data-icu-icon="pause" data-size="14"></span> <span id="sim-toggle-text">Pause Simulation</span>
+        </button>
+        
+        <div class="sim-speed-group">
+          <label for="sim-speed-select">Cadence:</label>
+          <select id="sim-speed-select" class="sim-select">
+            <option value="2000">Fast (2s)</option>
+            <option value="4000" selected>Standard (4s)</option>
+            <option value="10000">Slow (10s)</option>
+          </select>
+        </div>
+
+        <button id="btn-trigger-demo-breach" class="btn-sim-breach" title="Trigger high-reading excursion for Bed 115 (Marcus Vance) to verify automated alerting">
+          <span data-icu-icon="zap" data-size="14"></span> Trigger Bed 115 Alert
+        </button>
+      </div>
+    </section>
+
+    <!-- Main Dynamic Content Views Container -->
+    <main class="app-main" id="main-content">
+      <!-- Loading Spinner Indicator -->
+      <div id="global-loading" class="loading-container" style="display:none;">
+        <div class="medical-loader">
+          <div class="pulse-ring"></div>
+          <div class="loader-icon" data-icu-icon="activity" data-size="28"></div>
+        </div>
+        <p class="loading-label">Synchronizing telemetry data...</p>
+      </div>
+
+      <!-- VIEW: LANDING PAGE -->
+      <section id="view-landing" class="view-panel">
+        <div class="landing-container">
+          <!-- Hero Section -->
+          <div class="landing-hero">
+            <div class="landing-pill">
+              <span class="pulse-dot"></span>
+              <span>VITALIS CLINICAL TELEMETRY PLATFORM</span>
+            </div>
+            <h1 class="landing-title">Next-Generation ICU Telemetry & Rapid Clinical Surveillance</h1>
+            <p class="landing-subtitle">
+              Continuous hemodynamic surveillance, zero-latency deterioration alarms, and privacy-governed family engagement — engineered with Apple Health clinical clarity.
+            </p>
+            <div class="landing-hero-actions">
+              <button id="landing-btn-signin" class="btn-landing-primary">
+                Sign In to Vitalis ICU <span data-icu-icon="arrow-right" data-size="16"></span>
+              </button>
+              <button id="landing-btn-explore" class="btn-landing-secondary">
+                <span data-icu-icon="sparkles" data-size="16"></span> Clinical Capabilities
+              </button>
+            </div>
+            
+            <div class="landing-roles-strip">
+              <span class="roles-label">Role-Specific Gateways:</span>
+              <span class="role-pill"><span data-icu-icon="activity" data-size="14"></span> Clinical Staff</span>
+              <span class="role-pill"><span data-icu-icon="heart-handshake" data-size="14"></span> Family Sharing</span>
+              <span class="role-pill"><span data-icu-icon="settings" data-size="14"></span> System Admin</span>
+            </div>
+          </div>
+
+          <!-- Hero Telemetry Showcase Banner -->
+          <div class="landing-preview-banner">
+            <div class="banner-glass-card">
+              <div class="banner-top-bar">
+                <div class="banner-status-item">
+                  <span class="dot-live"></span>
+                  <span class="banner-status-txt">LIVE ICU SURVEILLANCE ACTIVE</span>
+                </div>
+                <div class="banner-badge-group">
+                  <span class="b-badge">15 BEDS CONNECTED</span>
+                  <span class="b-badge">ZERO LATENCY SSE</span>
+                </div>
+              </div>
+              <div class="banner-metrics-grid">
+                <div class="banner-metric">
+                  <div class="b-metric-label"><span data-icu-icon="heart" data-size="16"></span> Heart Rate Telemetry</div>
+                  <div class="b-metric-val">76 <span class="b-unit">bpm</span></div>
+                  <div class="b-metric-sub">Continuous ECG Lead II</div>
+                </div>
+                <div class="banner-metric">
+                  <div class="b-metric-label"><span data-icu-icon="activity" data-size="16"></span> Arterial BP</div>
+                  <div class="b-metric-val">122/78 <span class="b-unit">mmHg</span></div>
+                  <div class="b-metric-sub">Auto-cycling NIBP</div>
+                </div>
+                <div class="banner-metric">
+                  <div class="b-metric-label"><span data-icu-icon="droplet" data-size="16"></span> Blood Oxygen</div>
+                  <div class="b-metric-val">97% <span class="b-unit">SpO2</span></div>
+                  <div class="b-metric-sub">Continuous Pulse Oximetry</div>
+                </div>
+                <div class="banner-metric">
+                  <div class="b-metric-label"><span data-icu-icon="shield-check" data-size="16"></span> Unit Safety Index</div>
+                  <div class="b-metric-val">100% <span class="b-unit">Protected</span></div>
+                  <div class="b-metric-sub">Cryptographic Audit Active</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Core System Pillars Grid -->
+          <div class="landing-section-header">
+            <span class="section-tag">CORE ARCHITECTURE</span>
+            <h2>Engineered For Clinical Excellence & Patient Dignity</h2>
+            <p>A unified telemetry stack designed from the ground up to empower medical teams and reassure loved ones.</p>
+          </div>
+
+          <div class="landing-pillars-grid">
+            <div class="landing-pillar-card">
+              <div class="pillar-icon-box heart">
+                <span data-icu-icon="activity" data-size="24"></span>
+              </div>
+              <h3>Continuous Hemodynamic Telemetry</h3>
+              <p>Eliminate dangerous charting gaps with continuous vital streaming every few seconds. Immediate trend recognition catches subtle deterioration hours before cardiac arrest.</p>
+            </div>
+
+            <div class="landing-pillar-card">
+              <div class="pillar-icon-box warning">
+                <span data-icu-icon="bell" data-size="24"></span>
+              </div>
+              <h3>Intelligent Alarm Triage & Mitigation</h3>
+              <p>Combat hospital alarm fatigue with tiered categorization (Normal, Warning, Critical) and instant bedside acknowledgment with permanent clinical audit tracking.</p>
+            </div>
+
+            <div class="landing-pillar-card">
+              <div class="pillar-icon-box family">
+                <span data-icu-icon="heart-handshake" data-size="24"></span>
+              </div>
+              <h3>Isolated Family Comfort Sharing</h3>
+              <p>Anxious family members receive transparent, humanized health status cards and physician notes without exposing stressful raw alarms or compromising other patients.</p>
+            </div>
+
+            <div class="landing-pillar-card">
+              <div class="pillar-icon-box admin">
+                <span data-icu-icon="shield-check" data-size="24"></span>
+              </div>
+              <h3>Database-Enforced RBAC & Audit Trail</h3>
+              <p>Fine-grained security prevents data leakage at the query layer. All logins, threshold calibrations, and notes are immutably stored in tamper-evident logs.</p>
+            </div>
+          </div>
+
+          <!-- Clinical Advantages & System Highlights (Combined Section) -->
+          <div class="landing-section-header mt-5" id="landing-advantages-section">
+            <span class="section-tag">CLINICAL & ARCHITECTURAL ADVANTAGES</span>
+            <h2>Why Vitalis ICU Transforms Intensive Care Monitoring</h2>
+            <p>Moving beyond traditional intermittent nursing logs and isolated bedside monitors, Vitalis ICU unites continuous real-time telemetry, automated deterioration algorithms, role-aware database security, and compassionate family engagement.</p>
+          </div>
+
+          <div class="benefits-grid">
+            <div class="benefit-card">
+              <div class="benefit-icon"><span data-icu-icon="trending-up" data-size="28"></span></div>
+              <h3>Continuous Telemetry vs Intermittent Charting</h3>
+              <p>Traditional ward vitals recorded every 4-6 hours miss sudden clinical decompensation. Vitalis ICU continuously streams hemodynamics every few seconds, catching subtle physiologic instability before irreversible arrest occurs.</p>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon"><span data-icu-icon="zap" data-size="28"></span></div>
+              <h3>Early Sepsis & Hypoxemia Warning</h3>
+              <p>Automated threshold algorithms immediately cross-reference heart rate, blood pressure, SpO2, and respiratory rate to detect early signs of hypoxemia, malignant arrhythmias, and septic shock.</p>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon"><span data-icu-icon="volume-x" data-size="28"></span></div>
+              <h3>Alarm Fatigue Reduction</h3>
+              <p>Hospital ICUs suffer from alarm fatigue where hundreds of false alarms cause sensory overload. Vitalis ICU utilizes tiered severity categorization (Normal, Warning, Critical) and intelligent state deduplication.</p>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon"><span data-icu-icon="lock" data-size="28"></span></div>
+              <h3>Database-Enforced Role Security</h3>
+              <p>Unlike simplistic frontend toggles, privacy is enforced at the database layer. Family members can never query beds outside their explicit verified linkage, protecting sensitive patient health records.</p>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon"><span data-icu-icon="heart-handshake" data-size="28"></span></div>
+              <h3>Compassionate Family Transparency</h3>
+              <p>Anxious families often call nursing desks repeatedly for updates. The dedicated Family Portal provides curated, human-readable comfort summaries and care messages without exposing stressful raw alarms.</p>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon"><span data-icu-icon="file-text" data-size="28"></span></div>
+              <h3>Tamper-Evident Medical Audit Trail</h3>
+              <p>Every login, vital acknowledgment, threshold override, and clinical note is permanently logged with actor credentials, timestamps, and IP addresses to satisfy hospital clinical governance.</p>
+            </div>
+          </div>
+
+          <div class="benefits-demo-section">
+            <div class="demo-highlight-box">
+              <h3><span data-icu-icon="flask-conical" data-size="20"></span> Automated Simulation & Verification Engine</h3>
+              <p>
+                To provide dependable demonstration and staff training without risking clinical patient data, Vitalis ICU incorporates a dedicated simulation engine with 15 fictional patients, including <strong>Bed 115 (Marcus "Unlucky" Vance)</strong> who is specifically programmed with elevated physiological swings to reliably demonstrate real-time alerts.
+              </p>
+            </div>
+          </div>
+
+          <!-- Role-Tailored Experience Matrix -->
+          <div class="landing-section-header mt-5">
+            <span class="section-tag">PERSONA-AWARE DESIGN</span>
+            <h2>Role-Specific Interfaces</h2>
+            <p>Every logged-in user experiences an interface strictly tailored to their duties, ensuring zero noise and total focus.</p>
+          </div>
+
+          <div class="landing-roles-grid">
+            <div class="role-card">
+              <div class="role-card-badge staff">CLINICAL STAFF</div>
+              <h3>Critical Care Nurses & Physicians</h3>
+              <ul class="role-feature-list">
+                <li><span data-icu-icon="check-circle" data-size="16"></span> High-density 15-bed telemetry grid</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Live ECG rhythm waveform animation</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Single-tap alert acknowledgment & progress notes</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> "Assigned to Me" nurse-patient shift filtering</li>
+              </ul>
+              <button class="btn-role-cta" data-target-role="staff">Sign In as Clinical Staff</button>
+            </div>
+
+            <div class="role-card">
+              <div class="role-card-badge family">PATIENT FAMILY</div>
+              <h3>Families & Designated Proxies</h3>
+              <ul class="role-feature-list">
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Reassuring, humanized comfort health card</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Complete privacy isolation (linked patient only)</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Direct clinical care team progress notes</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Zero stressful raw hospital alarm bells</li>
+              </ul>
+              <button class="btn-role-cta" data-target-role="family">Access Family Portal</button>
+            </div>
+
+            <div class="role-card">
+              <div class="role-card-badge admin">ADMINISTRATOR</div>
+              <h3>Hospital Operations & Governance</h3>
+              <ul class="role-feature-list">
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Role provisioning & credential management</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Dynamic physiological threshold configuration</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Nurse shift bed allocation & family verification</li>
+                <li><span data-icu-icon="check-circle" data-size="16"></span> Tamper-evident HIPAA-ready audit logging</li>
+              </ul>
+              <button class="btn-role-cta" data-target-role="admin">Sign In as Administrator</button>
+            </div>
+          </div>
+
+          <!-- Bottom CTA Strip -->
+          <div class="landing-cta-banner">
+            <div class="cta-banner-content">
+              <h2>Experience Vitalis ICU Today</h2>
+              <p>Explore the full system using seeded demo profiles or your authenticated hospital credentials.</p>
+            </div>
+            <div class="cta-banner-actions">
+              <button id="landing-btn-bottom-login" class="btn-landing-primary">
+                Launch Portal Sign In <span data-icu-icon="arrow-right" data-size="16"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: LOGIN SCREEN -->
+      <section id="view-login" class="view-panel" style="display:none;">
+        <div class="login-container">
+          <div class="login-card">
+            <div class="login-card-nav">
+              <button id="btn-back-to-landing" class="btn-back-landing" type="button">
+                <span data-icu-icon="chevron-right" data-size="16" style="transform: rotate(180deg); display: inline-flex;"></span> Back to Overview
+              </button>
+            </div>
+            <div class="login-card-header">
+              <div class="login-shield-icon"><span data-icu-icon="shield-check" data-size="34"></span></div>
+              <h2>Vitalis ICU Secure Access Portal</h2>
+              <p>Role-aware security gateway with database-level isolation</p>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div class="login-role-tabs">
+              <button class="role-tab-btn active" data-role="staff"><span data-icu-icon="activity" data-size="14"></span> Clinical Staff</button>
+              <button class="role-tab-btn" data-role="family"><span data-icu-icon="users" data-size="14"></span> Family Portal</button>
+              <button class="role-tab-btn" data-role="admin"><span data-icu-icon="settings" data-size="14"></span> System Admin</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="form-login" class="login-form">
+              <div class="form-group">
+                <label for="login-identifier">Username or Hospital Email</label>
+                <input type="text" id="login-identifier" class="form-input" placeholder="e.g. nurse.sarah@hospital.icu" required autocomplete="username">
+              </div>
+
+              <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+              </div>
+
+              <div id="login-error-msg" class="error-banner" style="display:none;"></div>
+
+              <button type="submit" id="btn-login-submit" class="btn-primary-lg">
+                <span data-icu-icon="log-in" data-size="16"></span> Sign In to Vitalis ICU
+              </button>
+            </form>
+
+            <!-- Quick Demo 1-Click Credentials Accordion -->
+            <div class="demo-accounts-card">
+              <div class="demo-card-title">
+                <span><span data-icu-icon="zap" data-size="15"></span> Quick Demo One-Click Sign In</span>
+                <span class="demo-subtitle">Switch roles instantly during evaluation</span>
+              </div>
+              <div class="demo-quick-grid" id="demo-accounts-buttons">
+                <!-- Injected via JavaScript from /api/auth/demo-accounts -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: STAFF ICU DASHBOARD -->
+      <section id="view-dashboard" class="view-panel" style="display:none;">
+        <!-- Apple Health Highlights Summary Row -->
+        <div class="health-highlights-row">
+          <div class="highlight-card">
+            <div class="highlight-card-header">
+              <div class="squircle-icon heart"><span data-icu-icon="heart" data-size="20"></span></div>
+              <span class="highlight-category-title">Heart Rate Range</span>
+            </div>
+            <div class="highlight-metric-val"><span id="hl-hr-avg">76</span> <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">bpm</span></div>
+            <div class="highlight-metric-desc">Continuous ECG • 15 Beds Monitored</div>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-card-header">
+              <div class="squircle-icon bp"><span data-icu-icon="activity" data-size="20"></span></div>
+              <span class="highlight-category-title">Blood Pressure</span>
+            </div>
+            <div class="highlight-metric-val"><span id="hl-bp-avg">122/78</span> <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">mmHg</span></div>
+            <div class="highlight-metric-desc">Automated NIBP Telemetry Active</div>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-card-header">
+              <div class="squircle-icon oxygen"><span data-icu-icon="droplet" data-size="20"></span></div>
+              <span class="highlight-category-title">Oxygen Saturation</span>
+            </div>
+            <div class="highlight-metric-val"><span id="hl-spo2-avg">97%</span> <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">SpO2</span></div>
+            <div class="highlight-metric-desc">Normal Unit Baseline (&gt;92%)</div>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-card-header">
+              <div class="squircle-icon shield"><span data-icu-icon="shield-check" data-size="20"></span></div>
+              <span class="highlight-category-title">Unit Status</span>
+            </div>
+            <div class="highlight-metric-val"><span id="hl-status-count">14 In Range</span></div>
+            <div class="highlight-metric-desc">Bed 115 under observation</div>
+          </div>
+        </div>
+
+        <!-- Dashboard Subheader Filter Bar -->
+        <div class="dash-toolbar">
+          <div class="dash-filter-group">
+            <button class="filter-chip active" data-filter="all">All Beds (15)</button>
+            <button class="filter-chip" data-filter="assigned" id="chip-assigned-filter">Assigned to Me</button>
+            <button class="filter-chip" data-filter="critical" id="chip-critical-filter">Active Alarms</button>
+          </div>
+
+          <div class="dash-search-group">
+            <input type="text" id="dash-search-input" class="search-input" placeholder="Search by Bed #, Name, Diagnosis...">
+          </div>
+
+          <div class="dash-stats">
+            <div class="stat-pill"><span class="stat-dot green"></span> Beds: <strong id="stat-total-beds">15</strong></div>
+            <div class="stat-pill"><span class="stat-dot red"></span> Critical: <strong id="stat-critical-count">1</strong></div>
+          </div>
+        </div>
+
+        <!-- Real-Time Telemetry Grid -->
+        <div class="telemetry-grid" id="telemetry-beds-container">
+          <!-- Dynamically populated Bed Cards -->
+        </div>
+      </section>
+
+      <!-- VIEW: ALERT TRIAGE CENTER -->
+      <section id="view-alerts" class="view-panel" style="display:none;">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h2><span data-icu-icon="bell" data-size="22" style="color:var(--health-critical); vertical-align:-3px;"></span> Alert Triage & Response Center</h2>
+            <p>Active threshold breaches, physiological warnings, and acknowledgment audit trail</p>
+          </div>
+          <div class="alert-status-tabs">
+            <button class="alert-tab-btn active" data-status="active">Active (<span id="count-tab-active">0</span>)</button>
+            <button class="alert-tab-btn" data-status="acknowledged">Acknowledged (<span id="count-tab-ack">0</span>)</button>
+            <button class="alert-tab-btn" data-status="resolved">Resolved</button>
+            <button class="alert-tab-btn" data-status="all">All History</button>
+          </div>
+        </div>
+
+        <div class="alerts-table-wrap">
+          <table class="clinical-table" id="alerts-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Bed / Patient</th>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Threshold Breached</th>
+                <th>Triggered At</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="alerts-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+          <div id="alerts-empty-state" class="empty-state-card" style="display:none;">
+            <div class="empty-icon"><span data-icu-icon="check-circle" data-size="36" style="color:var(--health-respiration);"></span></div>
+            <h3>No Active Alerts</h3>
+            <p>All physiological parameters are currently within safe clinical thresholds.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: FAMILY PORTAL -->
+      <section id="view-family" class="view-panel" style="display:none;">
+        <div class="family-view-container" id="family-container">
+          <!-- Dynamically rendered privacy-appropriate patient summary -->
+        </div>
+      </section>
+
+      <!-- VIEW: ADMIN CONSOLE -->
+      <section id="view-admin" class="view-panel" style="display:none;">
+        <div class="admin-wrapper">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h2><span data-icu-icon="settings" data-size="22" style="vertical-align:-3px;"></span> Administrative Management Console</h2>
+              <p>User provisioning, staff bed allocation, family verification, thresholds, and audit trails</p>
+            </div>
+          </div>
+
+          <div class="admin-nav-tabs">
+            <button class="admin-tab-btn active" data-admin-view="users">Users & Roles</button>
+            <button class="admin-tab-btn" data-admin-view="patients">Patients & Beds</button>
+            <button class="admin-tab-btn" data-admin-view="thresholds">Alert Thresholds</button>
+            <button class="admin-tab-btn" data-admin-view="assignments">Staff Bed Allocation</button>
+            <button class="admin-tab-btn" data-admin-view="family-links">Family Linkages</button>
+            <button class="admin-tab-btn" data-admin-view="audit">System Audit Log</button>
+          </div>
+
+          <!-- Admin Sub-panels -->
+          <div id="admin-panel-users" class="admin-panel active">
+            <div class="panel-action-bar">
+              <h3>System Users</h3>
+              <button id="btn-open-add-user" class="btn-primary-sm">+ Provision User</button>
+            </div>
+            <div class="table-card">
+              <table class="clinical-table" id="admin-users-table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Title / Relation</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="admin-panel-patients" class="admin-panel" style="display:none;">
+            <div class="panel-action-bar">
+              <h3>Patient Bed Admissions</h3>
+              <button id="btn-open-admit-patient" class="btn-primary-sm">+ Admit New Patient</button>
+            </div>
+            <div class="table-card">
+              <table class="clinical-table" id="admin-patients-table">
+                <thead>
+                  <tr>
+                    <th>Bed #</th>
+                    <th>Patient ID</th>
+                    <th>Full Name</th>
+                    <th>Age / Gender</th>
+                    <th>Diagnosis</th>
+                    <th>Condition</th>
+                    <th>Attending Doctor</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-patients-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="admin-panel-thresholds" class="admin-panel" style="display:none;">
+            <div class="panel-action-bar">
+              <h3>Physiological Alarm Boundaries Configuration</h3>
+              <div class="form-row">
+                <label for="select-threshold-patient">Select Patient / Bed:</label>
+                <select id="select-threshold-patient" class="form-input-sm"></select>
+              </div>
+            </div>
+            <div id="threshold-editor-container" class="card-bordered p-4">
+              <!-- Threshold editor form rendered dynamically -->
+            </div>
+          </div>
+
+          <div id="admin-panel-assignments" class="admin-panel" style="display:none;">
+            <div class="panel-action-bar">
+              <h3>Clinical Staff Bed Assignments</h3>
+              <button id="btn-open-assign-staff" class="btn-primary-sm">+ Assign Staff to Bed</button>
+            </div>
+            <div class="table-card">
+              <table class="clinical-table" id="admin-assignments-table">
+                <thead>
+                  <tr>
+                    <th>Staff Name</th>
+                    <th>Email</th>
+                    <th>Bed #</th>
+                    <th>Patient</th>
+                    <th>Shift</th>
+                    <th>Assigned At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-assignments-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="admin-panel-family-links" class="admin-panel" style="display:none;">
+            <div class="panel-action-bar">
+              <h3>Family Member Verification & Bed Linking</h3>
+              <button id="btn-open-link-family" class="btn-primary-sm">+ Link Family Account</button>
+            </div>
+            <div class="table-card">
+              <table class="clinical-table" id="admin-family-table">
+                <thead>
+                  <tr>
+                    <th>Family User</th>
+                    <th>Email</th>
+                    <th>Relationship</th>
+                    <th>Linked Bed #</th>
+                    <th>Patient Name</th>
+                    <th>Verified At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-family-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="admin-panel-audit" class="admin-panel" style="display:none;">
+            <div class="panel-action-bar">
+              <h3>Tamper-Evident Security & Clinical Audit Trail</h3>
+              <div class="audit-filters">
+                <input type="text" id="audit-search" class="search-input-sm" placeholder="Search action, user, or target...">
+                <select id="audit-filter-role" class="form-input-sm">
+                  <option value="">All Roles</option>
+                  <option value="admin">Admin</option>
+                  <option value="staff">Staff</option>
+                  <option value="family">Family</option>
+                  <option value="system">System</option>
+                </select>
+                <button id="btn-refresh-audit" class="btn-secondary-sm">Refresh</button>
+              </div>
+            </div>
+            <div class="table-card">
+              <table class="clinical-table" id="admin-audit-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Event Type</th>
+                    <th>Actor</th>
+                    <th>Role</th>
+                    <th>Entity</th>
+                    <th>Action Summary</th>
+                    <th>IP</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-audit-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- PATIENT TELEMETRY DETAIL DRAWER / MODAL -->
+    <div id="patient-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="bed-pill-lg" id="modal-bed-badge">BED 101</div>
+            <div>
+              <h3 id="modal-patient-name">Patient Name</h3>
+              <span id="modal-patient-sub" class="modal-sub">ID: PAT-101 • Age 42 • Male</span>
+            </div>
+          </div>
+          <button id="btn-close-modal" class="modal-close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Real-time Live Waves Canvas -->
+          <div class="waveform-box">
+            <div class="waveform-header">
+              <span class="wave-title">ECG Lead II Telemetry Waveform</span>
+              <span class="wave-status" id="modal-live-status">LIVE TELEMETRY STREAM</span>
+            </div>
+            <canvas id="ecg-canvas" width="800" height="120" class="ecg-canvas"></canvas>
+          </div>
+
+          <!-- Current Vitals Cards Row -->
+          <div class="vitals-summary-row" id="modal-vitals-row">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Modal Tabs -->
+          <div class="modal-tabs">
+            <button class="m-tab active" data-tab="history">Vital Trends</button>
+            <button class="m-tab" data-tab="notes">Clinical Notes</button>
+            <button class="m-tab" data-tab="thresholds">Alarm Thresholds</button>
+          </div>
+
+          <!-- Tab Content: Trends -->
+          <div id="modal-tab-history" class="m-tab-content active">
+            <div class="chart-container">
+              <canvas id="history-chart-canvas" width="800" height="220" class="chart-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Tab Content: Notes -->
+          <div id="modal-tab-notes" class="m-tab-content" style="display:none;">
+            <form id="form-add-clinical-note" class="note-input-form">
+              <div class="note-form-row">
+                <select id="note-category-select" class="form-input-sm">
+                  <option value="observation">Nurse Observation</option>
+                  <option value="intervention">Clinical Intervention</option>
+                  <option value="physician_round">Physician Rounding</option>
+                  <option value="family_communication">Family Update</option>
+                </select>
+                <input type="text" id="note-text-input" class="form-input" placeholder="Enter clinical progress note..." required>
+                <button type="submit" class="btn-primary-sm">Record Note</button>
+              </div>
+            </form>
+            <div class="notes-timeline" id="modal-notes-timeline"></div>
+          </div>
+
+          <!-- Tab Content: Thresholds -->
+          <div id="modal-tab-thresholds" class="m-tab-content" style="display:none;">
+            <div id="modal-thresholds-display" class="thresholds-info-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: ACKNOWLEDGE ALERT -->
+    <div id="ack-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-header">
+          <h3>Acknowledge Clinical Alert</h3>
+          <button id="btn-close-ack-modal" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="ack-alert-desc" class="text-sm mb-3">Alert description</p>
+          <div class="form-group">
+            <label for="ack-notes-input">Clinical Action / Triage Note:</label>
+            <input type="text" id="ack-notes-input" class="form-input" placeholder="e.g. Bedside assessment done; physician informed" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-cancel-ack" class="btn-secondary-sm">Cancel</button>
+          <button id="btn-confirm-ack" class="btn-primary-sm">Confirm Acknowledgment</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD USER (ADMIN) -->
+    <div id="add-user-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-dialog modal-md">
+        <div class="modal-header">
+          <h3>Provision New System User</h3>
+          <button id="btn-close-user-modal" class="modal-close-btn">&times;</button>
+        </div>
+        <form id="form-create-user" class="modal-body">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="new-user-fullname" class="form-input" required placeholder="e.g. Nurse Jessica Taylor">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="new-user-username" class="form-input" required placeholder="e.g. nurse.jessica">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="new-user-email" class="form-input" required placeholder="e.g. jessica@hospital.icu">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Role</label>
+              <select id="new-user-role" class="form-input" required>
+                <option value="staff">Staff (Clinician / Nurse)</option>
+                <option value="family">Family Member</option>
+                <option value="admin">System Administrator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="new-user-password" class="form-input" required placeholder="••••••••">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Clinical Title or Family Relation</label>
+            <input type="text" id="new-user-title" class="form-input" placeholder="e.g. Staff Nurse / Spouse">
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="btn-cancel-user" class="btn-secondary-sm">Cancel</button>
+            <button type="submit" class="btn-primary-sm">Create User</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: ADMIT PATIENT (ADMIN) -->
+    <div id="admit-patient-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-dialog modal-md">
+        <div class="modal-header">
+          <h3>Admit New ICU Patient</h3>
+          <button id="btn-close-admit-modal" class="modal-close-btn">&times;</button>
+        </div>
+        <form id="form-admit-patient" class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="admit-first-name" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="admit-last-name" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Bed Number</label>
+              <input type="number" id="admit-bed-no" class="form-input" min="1" max="999" required placeholder="e.g. 116">
+            </div>
+            <div class="form-group">
+              <label>Age</label>
+              <input type="number" id="admit-age" class="form-input" min="0" max="120" required>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="admit-gender" class="form-input" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Diagnosis</label>
+            <input type="text" id="admit-diagnosis" class="form-input" required placeholder="Primary admitting condition">
+          </div>
+          <div class="form-group">
+            <label>Attending Physician</label>
+            <input type="text" id="admit-physician" class="form-input" placeholder="Dr. Arjun Mehta, MD">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Condition Status</label>
+              <select id="admit-condition" class="form-input">
+                <option value="serious">Serious</option>
+                <option value="critical">Critical</option>
+                <option value="stable">Stable</option>
+                <option value="recovering">Recovering</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Simulation Profile</label>
+              <select id="admit-profile" class="form-input">
+                <option value="standard">Standard Telemetry</option>
+                <option value="arrhythmia">Arrhythmia Fluctuations</option>
+                <option value="respiratory_distress">Respiratory Distress</option>
+                <option value="critical_demo">Critical Demo (Frequent Excursions)</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="btn-cancel-admit" class="btn-secondary-sm">Cancel</button>
+            <button type="submit" class="btn-primary-sm">Admit Patient</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: ASSIGN STAFF -->
+    <div id="assign-staff-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-header">
+          <h3>Assign Staff to Patient Bed</h3>
+          <button id="btn-close-assign-modal" class="modal-close-btn">&times;</button>
+        </div>
+        <form id="form-assign-staff" class="modal-body">
+          <div class="form-group">
+            <label>Select Staff Member</label>
+            <select id="assign-select-staff" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label>Select Patient Bed</label>
+            <select id="assign-select-patient" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label>Shift</label>
+            <select id="assign-select-shift" class="form-input">
+              <option value="all">Continuous / All Shifts</option>
+              <option value="morning">Morning Shift</option>
+              <option value="evening">Evening Shift</option>
+              <option value="night">Night Shift</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="btn-cancel-assign" class="btn-secondary-sm">Cancel</button>
+            <button type="submit" class="btn-primary-sm">Confirm Assignment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: LINK FAMILY -->
+    <div id="link-family-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-header">
+          <h3>Verify & Link Family Member</h3>
+          <button id="btn-close-link-modal" class="modal-close-btn">&times;</button>
+        </div>
+        <form id="form-link-family" class="modal-body">
+          <div class="form-group">
+            <label>Family User Account</label>
+            <select id="link-select-user" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label>Patient Bed</label>
+            <select id="link-select-patient" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label>Relationship</label>
+            <input type="text" id="link-input-relationship" class="form-input" placeholder="e.g. Spouse, Daughter, Brother" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="btn-cancel-link" class="btn-secondary-sm">Cancel</button>
+            <button type="submit" class="btn-primary-sm">Create Linkage</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="/js/icons.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/audio.js"></script>
+  <script src="/js/stream.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
