@@ -2,6 +2,19 @@ const EventEmitter = require('node:events');
 const { getDatabase } = require('../db/database');
 const { recordVitalReading } = require('./vitalService');
 const { logAudit } = require('./auditService');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
+
+const pythonSimulator = path.join(__dirname, '..', 'python', 'vital_generator.py');
+
+function generateVitals(inputs) {
+  const result = spawnSync(process.env.PYTHON || 'python3', [pythonSimulator], {
+    input: JSON.stringify(inputs), encoding: 'utf8', maxBuffer: 1024 * 1024
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`Python vital generator failed: ${result.stderr}`);
+  return JSON.parse(result.stdout);
+}
 
 class SimulatorService extends EventEmitter {
   constructor() {
@@ -57,13 +70,16 @@ class SimulatorService extends EventEmitter {
       const updates = [];
       const newAlerts = [];
 
-      for (const p of patients) {
-        // Query latest reading as baseline
-        const lastVital = db.prepare(`
-          SELECT * FROM vitals WHERE patient_id = ? ORDER BY id DESC LIMIT 1
-        `).get(p.id);
+      const inputs = patients.map((p) => ({
+        patient: p,
+        lastVital: db.prepare(`SELECT * FROM vitals WHERE patient_id = ? ORDER BY id DESC LIMIT 1`).get(p.id),
+        tick: this.tickCount
+      }));
+      const generatedVitals = generateVitals(inputs);
 
-        const nextVitals = this.calculateNextVitals(p, lastVital, this.tickCount);
+      for (const [index, p] of patients.entries()) {
+        // Query latest reading as baseline
+        const nextVitals = generatedVitals[index];
         const { vitalRecord, alertsTriggered } = recordVitalReading(p.id, nextVitals, 1);
         
         updates.push({
@@ -99,73 +115,6 @@ class SimulatorService extends EventEmitter {
     } catch (err) {
       console.error('Error during simulator step:', err);
     }
-  }
-
-  calculateNextVitals(patient, lastVital, tick) {
-    const isCritical = patient.simulation_profile === 'critical_demo';
-    const isArrhythmia = patient.simulation_profile === 'arrhythmia';
-    const isResp = patient.simulation_profile === 'respiratory_distress';
-
-    if (isCritical) {
-      // Marcus Vance "Unlucky Guy" - Deliberately swings out of safe bounds
-      const hrWave = Math.sin(tick * 0.4);
-      const bpWave = Math.cos(tick * 0.35);
-
-      return {
-        heart_rate: 132 + Math.floor(hrWave * 16) + (Math.random() > 0.6 ? 8 : -4), // 120-156 bpm (Tachycardia!)
-        blood_pressure_sys: 176 + Math.floor(bpWave * 18), // 158-194 mmHg (Critical Hypertension!)
-        blood_pressure_dia: 104 + Math.floor(bpWave * 9),
-        spo2: 87 + Math.floor(Math.sin(tick * 0.5) * 4), // 83-91% (Critical Hypoxemia!)
-        respiration_rate: 28 + Math.floor(Math.random() * 4), // 28-31 bpm (Tachypnea!)
-        temperature: 38.7 + (Math.sin(tick * 0.2) * 0.4) // 38.3-39.1 °C
-      };
-    }
-
-    if (isArrhythmia) {
-      const baseHr = (lastVital && lastVital.heart_rate) || 82;
-      const jump = Math.random() > 0.75 ? (Math.random() > 0.5 ? 24 : -18) : (Math.random() * 4 - 2);
-      return {
-        heart_rate: Math.max(50, Math.min(125, Math.round(baseHr + jump))),
-        blood_pressure_sys: 122 + Math.floor(Math.random() * 6 - 3),
-        blood_pressure_dia: 78 + Math.floor(Math.random() * 4 - 2),
-        spo2: 97 + Math.floor(Math.random() * 2),
-        respiration_rate: 16 + Math.floor(Math.random() * 3 - 1),
-        temperature: 36.9 + (Math.random() * 0.2 - 0.1)
-      };
-    }
-
-    if (isResp) {
-      return {
-        heart_rate: 92 + Math.floor(Math.random() * 8 - 4),
-        blood_pressure_sys: 130 + Math.floor(Math.random() * 8 - 4),
-        blood_pressure_dia: 82 + Math.floor(Math.random() * 4 - 2),
-        spo2: 93 + Math.floor(Math.random() * 3 - 1), // near lower border
-        respiration_rate: 23 + Math.floor(Math.random() * 3 - 1), // near threshold
-        temperature: 37.3 + (Math.random() * 0.2 - 0.1)
-      };
-    }
-
-    // Standard clinical ICU stability with gentle biological drift
-    const baseHr = (lastVital && lastVital.heart_rate) || 74;
-    const baseSys = (lastVital && lastVital.blood_pressure_sys) || 120;
-    const baseDia = (lastVital && lastVital.blood_pressure_dia) || 76;
-    const baseSpo2 = (lastVital && lastVital.spo2) || 98;
-    const baseRr = (lastVital && lastVital.respiration_rate) || 16;
-    const baseTemp = (lastVital && lastVital.temperature) || 36.8;
-
-    const drift = (val, min, max, delta = 2) => {
-      const next = val + (Math.random() * (delta * 2) - delta);
-      return Math.max(min, Math.min(max, next));
-    };
-
-    return {
-      heart_rate: Math.round(drift(baseHr, 60, 95, 2)),
-      blood_pressure_sys: Math.round(drift(baseSys, 105, 135, 3)),
-      blood_pressure_dia: Math.round(drift(baseDia, 65, 85, 2)),
-      spo2: Math.min(100, Math.round(drift(baseSpo2, 95, 99, 1))),
-      respiration_rate: Math.round(drift(baseRr, 13, 19, 1)),
-      temperature: drift(baseTemp, 36.4, 37.4, 0.1)
-    };
   }
 
   triggerManualBreach(patientId, parameter = 'blood_pressure_sys') {

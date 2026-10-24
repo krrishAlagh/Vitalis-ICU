@@ -39,7 +39,7 @@ Vitalis ICU is a full-featured, role-aware, continuous telemetry monitoring plat
 
 ## 2. Technology Stack & Key Decisions
 
-- **Runtime & Backend**: Node.js v24 (LTS) with Express.
+- **Runtime & Backend**: Node.js v24 (LTS) with Express for the application API, plus a Python 3 telemetry generator for simulated vital signs.
 - **Database Engine**: SQLite 3 via Node.js native `node:sqlite` (`DatabaseSync`):
   - Zero external database server configuration required.
   - Full ACID transactions, Write-Ahead Logging (`PRAGMA journal_mode = WAL`), and strict Foreign Keys (`PRAGMA foreign_keys = ON`).
@@ -49,6 +49,7 @@ Vitalis ICU is a full-featured, role-aware, continuous telemetry monitoring plat
   - JSON Web Tokens (JWT) with HMAC SHA-256 for authenticated sessions.
 - **Real-Time Engine**:
   - Server-Sent Events (SSE) `/api/stream/events` for telemetry broadcasting and alert dispatch.
+  - The Node.js simulator sends each patient batch to `server/python/vital_generator.py`; Python's `random` module generates the simulated readings and returns them to Node.js for persistence, alert evaluation, and SSE broadcasting.
 - **Frontend Architecture**:
   - Semantic HTML5 and Vanilla ES6+ JavaScript modules.
   - High-acuity dark medical design system using Vanilla CSS (variables, glassmorphism, responsive telemetry cards, pulsing heart rate animations).
@@ -83,12 +84,14 @@ ICUManagment/
 │   │   ├── adminRoutes.js     # User CRUD, beds, thresholds, assignments, audit logs
 │   │   ├── simulatorRoutes.js # Simulator start/stop/speed/breach
 │   │   └── streamRoutes.js    # Server-Sent Events telemetry endpoint
-│   └── services/
+│   ├── services/
 │       ├── authService.js     # Password verification & JWT issuance
 │       ├── auditService.js    # Audit log persistence & querying
 │       ├── vitalService.js    # Telemetry recording & family privacy wrapper
 │       ├── alertService.js    # Physiological threshold breach detector
-│       └── simulatorService.js# Background physiological RNG emitter
+│   │   └── simulatorService.js# Background physiological simulator
+│   └── python/
+│       └── vital_generator.py # Python RNG for batched simulated vital signs
 ├── public/
 │   ├── index.html             # Single-page interface shell
 │   ├── css/
@@ -113,6 +116,7 @@ ICUManagment/
 ### Prerequisites
 - Node.js version 22+ (v24 recommended, built-in `node:sqlite` supported)
 - npm version 10+
+- Python 3 (available as `python3`, or set `PYTHON` to its executable path)
 
 ### Setup Commands
 
